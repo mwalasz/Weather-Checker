@@ -1,0 +1,101 @@
+﻿<Window x:Class="WindowWeatherApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WindowWeatherApp"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="600" Width="530" ResizeMode="CanResize">
+    
+    <Border Padding="10">
+        <StackPanel >
+            <!-- Tytul -->
+            <Grid>
+                <TextBlock Margin="0 0 0 20" HorizontalAlignment="Center" FontWeight="DemiBold" Text="Pogoda w Katowicach" FontSize="40"/>
+            </Grid>
+
+            <!-- Temp -->
+            <Grid Margin="30 20 0 20">
+                    <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+    
+                    <TextBlock Margin="20 0 0 0" Grid.Column="0" FontWeight="DemiBold" Text="Temperatura: " FontSize="30"/>
+                    <TextBlock Margin="0 0 0 0" Grid.Column="1" HorizontalAlignment="Right" FontWeight="DemiBold" Text="DANE " FontSize="30"/>
+                    <TextBlock Margin="0 0 0 0" Grid.Column="2" FontWeight="DemiBold" Text=" °C" FontSize="30"/>
+            </Grid>
+
+            <!-- Wilg -->
+            <Grid Margin="30 20 0 20" >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Margin="20 0 0 0" Grid.Column="0" FontWeight="DemiBold" Text="Wilgotność: " FontSize="30"/>
+                <TextBlock Margin="0 0 0 0" Grid.Column="1" HorizontalAlignment="Right" FontWeight="DemiBold" Text="DANE " FontSize="30"/>
+                <TextBlock Margin="0 0 0 0" Grid.Column="2" FontWeight="DemiBold" Text=" %" FontSize="30"/>
+            </Grid>
+
+             <!-- Opad -->
+            <Grid Margin="30 20 0 20" >
+                <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Margin="20 0 0 0" Grid.Column="0" FontWeight="DemiBold" Text="Opady: " FontSize="30"/>
+                <TextBlock Margin="0 0 0 0" Grid.Column="1" HorizontalAlignment="Right" FontWeight="DemiBold" Text="DANE " FontSize="30"/>
+                    <TextBlock Margin="0 0 0 0" Grid.Column="2" FontWeight="DemiBold" Text=" mm" FontSize="30"/>
+                </Grid>
+
+            <!-- Wiatr -->
+            <Grid Margin="30 20 0 20" >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Margin="20 0 0 0" Grid.Column="0" FontWeight="DemiBold" Text="Wiatr: " FontSize="30"/>
+                <TextBlock Margin="0 0 0 0" Grid.Column="1" HorizontalAlignment="Right" FontWeight="DemiBold" Text="DANE " FontSize="30"/>
+                <TextBlock Margin="0 0 0 0" Grid.Column="2" FontWeight="DemiBold" Text=" m/s" FontSize="30"/>
+            </Grid>
+
+            <!-- Cisn -->
+            <Grid Margin="30 20 0 20" >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Margin="20 0 0 0" Grid.Column="0" FontWeight="DemiBold" Text="Ciśnienie: " FontSize="30"/>
+                <TextBlock Margin="0 0 0 0" Grid.Column="1" HorizontalAlignment="Right" FontWeight="DemiBold" Text="DANE " FontSize="30"/>
+                <TextBlock Margin="0 0 0 0" Grid.Column="2" FontWeight="DemiBold" Text=" hPa" FontSize="30"/>
+            </Grid>
+
+            <!-- Przycisk -->
+            <Grid Height="30">
+                <Button Margin="40 0 40 0" FontWeight="DemiBold" FontSize="15" Content="Odśwież dane"/>
+            </Grid>
+
+            <!-- Czas uaktualnienia -->
+            <Grid Margin="0 20 0 20" HorizontalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Margin="0 0 0 0"  Grid.Column="0" Text="Uaktualniono: " FontSize="15"/>
+                <TextBlock Margin="0 0 0 0"  Grid.Column="1" Text=" KIEDY" FontSize="15"/>
+            </Grid>
+
+
+        </StackPanel>
+    </Border>
+    
+</Window>
