@@ -1,30 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Net;
+using System.Runtime.InteropServices;
+using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace WindowWeatherApp
 {
-    public partial class MainWindow : Window
+    class WeatherInfo : Window
     {
         protected const int NUM_OF_WEATHER_DATA = 5;
         protected const string FILE_PATH = "C:\\Users\\Mateusz\\Desktop\\Weather_GIG.txt";
         protected const string URL_PATH = "http://meteo.gig.eu/";
 
-        public static string windDirection = "";
+        private static string windDirection = "";
+        public static string WindDirection
+        {
+            get { return windDirection; }
+            set { windDirection = value; }
+        }
 
         private static DateTime timeOfUpdate;
         public static DateTime TimeOfUpdate
@@ -43,13 +43,15 @@ namespace WindowWeatherApp
         private static string[] finalWeatherInfoToDisplay = new String[NUM_OF_WEATHER_DATA];
         public static string[] FinalWeatherInfoToDisplay
         {
-            get { return finalWeatherInfoToDisplay; }
+            get { return labelTextsArray; }
             set { finalWeatherInfoToDisplay = value; }
         }
-        public readonly string[] labelTextsArray = { "Temperatura", "Wilgotność", "Opady", "Wiatr", "Ciśnienie" };
 
-        private static readonly string[] unitsArray = { "°C", " %", " mm", "m/s", " hPa" };
-        public static string[] UnitsArray { get { return unitsArray; } }
+        private static string[] labelTextsArray = { "Temperatura", "Wilgotność", "Opady", "Wiatr", "Ciśnienie" };
+        public static string[] LabelTextsArray { get { return labelTextsArray; }}
+
+        private static string[] unitsArray = { "°C", " %", " mm", "m/s", " hPa" };
+        public static string[] UnitsArray { get { return unitsArray; }}
 
         //------------------------------------------------------------------------------------------------------
 
@@ -60,7 +62,7 @@ namespace WindowWeatherApp
 
         private static string GetDataFromWebSite(string url, string filePath)
         {
-            //Console.WriteLine("Oczekiwanie na dane ...");
+            Console.WriteLine("Oczekiwanie na dane ...");
             SetUpdateTime();
 
             WebClient client = new WebClient();
@@ -91,28 +93,26 @@ namespace WindowWeatherApp
 
         public static double GetEachValueFromText(string textFromWeb, string whatToSearchFor, string unit, ref string arr, ref string windDirection)
         {
-            string firstSequenceToFind = "</td><td class=\"wartosc\">&nbsp;", secondSequenceToFind = "&nbsp;", interspace = ": ", searchData, temp, temp2 = whatToSearchFor;
+            string firstSequenceToFind = "</td><td class=\"wartosc\">&nbsp;", secondSequenceToFind = "&nbsp;", interspace = ": ", searchData, temp;
 
             if (whatToSearchFor == "Temperatura")
             {
                 searchData = GetTextBetweenWords(textFromWeb, secondSequenceToFind, secondSequenceToFind);
                 arr = whatToSearchFor + interspace + searchData + " " + unit;
-                whatToSearchFor = temp2;
                 return Convert.ToDouble(searchData);
             }
 
             if (whatToSearchFor == "Opady")
-                whatToSearchFor = whatToSearchFor.ToLower();
+                    whatToSearchFor = whatToSearchFor.ToLower();
 
             if (whatToSearchFor == "Wiatr")
             {
                 secondSequenceToFind = " m/s</td>";
                 temp = whatToSearchFor + firstSequenceToFind;
                 searchData = GetTextBetweenWords(textFromWeb, temp, secondSequenceToFind);
-                windDirection = searchData.Substring(0, searchData.IndexOf('p')-1);
-                temp = searchData.Substring( searchData.IndexOf('y') + 1);
-                searchData = temp;
-                whatToSearchFor = temp2;
+                windDirection = searchData.Substring(0, searchData.IndexOf('y') + 1);
+                searchData = searchData.Substring(searchData.IndexOf('y') + 1, 4);
+                arr = whatToSearchFor + interspace + windDirection + searchData + " " + unit;
 
                 return Convert.ToDouble(searchData);
             }
@@ -126,24 +126,32 @@ namespace WindowWeatherApp
             if (whatToSearchFor == "stacji)")
                 whatToSearchFor = "Ciśnienie";
 
-            //zamiana pierwszej litery na duza
-
-            whatToSearchFor = temp2; //przywrocenie pierwotnej wartosci
+            arr = (whatToSearchFor.First().ToString().ToUpper() + whatToSearchFor.Substring(1)) + interspace + searchData + unit;
+                  //zamiana pierwszej litery na duza
             return Convert.ToDouble(searchData);
         }
 
-        public static void DownloadWeatherInfo( double[] data, string[] labels, string[] units, string[] finalArr, ref string wind)
+        public static void DisplayWeatherInfo(string weatherData, double[] data, string[] labels, string[] units, string[] finalArr, string wind)
+        {
+            Console.Clear();
+            Console.WriteLine("Data aktualizacji: " + Convert.ToString(timeOfUpdate) + "\n");
+
+            for (int i = 0; i < NUM_OF_WEATHER_DATA; i++)
+            {
+                data[i] = GetEachValueFromText(weatherData, labels[i], units[i], ref finalArr[i], ref wind);
+                Console.WriteLine(finalArr[i]);
+            }
+
+            Console.WriteLine();
+        }
+
+        public void DownloadWeatherInfo(double[] data, string[] labels, string[] units,
+            string[] finalArr, string wind)
         {
             try
             {
-                var weatherData = "";
-                weatherData = GetDataFromWebSite(URL_PATH, FILE_PATH);
-                //DownloadWeatherInfo(data, labels, units, finalArr, wind);
-            
-                for (int i = 0; i < NUM_OF_WEATHER_DATA; i++)
-                {
-                     data[i] = GetEachValueFromText(weatherData, labels[i], units[i], ref finalArr[i], ref wind);
-                }
+                var weatherData = GetDataFromWebSite(URL_PATH, FILE_PATH);
+                DisplayWeatherInfo(weatherData, data, labels, units, finalArr, wind);
             }
             catch (System.Net.WebException e1)
             {
@@ -153,30 +161,6 @@ namespace WindowWeatherApp
             {
                 Console.WriteLine("Bledna sciezka do pliku!");
             }
-        }
-
-        public void UpdateData()
-        {
-            DownloadWeatherInfo(DataArray, labelTextsArray, UnitsArray, FinalWeatherInfoToDisplay, ref windDirection);
-
-            Temp.Text = DataArray[0].ToString();
-            Wilg.Text = DataArray[1].ToString();
-            Opad.Text = DataArray[2].ToString();
-            Wiatr.Text = DataArray[3].ToString();
-            Kierunek.Text = windDirection;
-            Cisn.Text = DataArray[4].ToString();
-            UpdateTime.Text = TimeOfUpdate.ToString();
-        }
-
-        public MainWindow()
-        {
-            InitializeComponent();
-            UpdateData();
-        }
-
-        private void UpdateButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            UpdateData();
         }
     }
 }
