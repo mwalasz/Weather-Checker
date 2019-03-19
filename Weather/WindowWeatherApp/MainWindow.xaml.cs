@@ -220,31 +220,20 @@ namespace WindowWeatherApp
             UpdateTime.Text = TimeOfUpdate.ToString();
         }
 
+        private void ChangeColorOfObject(TextBox tb, int index)
+        {
+            if ((double)weatherData[index, 0] == ArchiveDataArray[index])
+                tb.Foreground = new SolidColorBrush(Colors.Crimson);
+            else tb.Foreground = new SolidColorBrush(Colors.Lime);
+        }
+
         private void ChangeColorOfWeatherDataText()
         {
-            if (DataArray[0] == ArchiveDataArray[0])
-                Temp.Foreground = new SolidColorBrush(Colors.Crimson);
-            else Temp.Foreground = new SolidColorBrush(Colors.Lime);
-
-            if (DataArray[1] == ArchiveDataArray[1])
-                Wilg.Foreground = new SolidColorBrush(Colors.Crimson);
-            else Wilg.Foreground = new SolidColorBrush(Colors.Lime);
-
-            if (DataArray[2] == ArchiveDataArray[2])
-                Opad.Foreground = new SolidColorBrush(Colors.Crimson);
-            else Opad.Foreground = new SolidColorBrush(Colors.Lime);
-
-            if (DataArray[3] == ArchiveDataArray[3])
-                Wiatr.Foreground = new SolidColorBrush(Colors.Crimson);
-            else Wiatr.Foreground = new SolidColorBrush(Colors.Lime);
-
-            if (DataArray[4] == ArchiveDataArray[4])
-                Cisn.Foreground = new SolidColorBrush(Colors.Crimson);
-            else Cisn.Foreground = new SolidColorBrush(Colors.Lime);
-       
-            if (windDirection == archiveWindDirection)
-                Kierunek.Foreground = new SolidColorBrush(Colors.Crimson);
-            else Kierunek.Foreground = new SolidColorBrush(Colors.Lime);
+            ChangeColorOfObject(Temp, 0);
+            ChangeColorOfObject(Wilg, 1);
+            ChangeColorOfObject(Opad, 2);
+            ChangeColorOfObject(Wiatr, 3);
+            ChangeColorOfObject(Cisn, 4);
         }
 
         public void UpdateData()
@@ -254,9 +243,7 @@ namespace WindowWeatherApp
             DownloadWeatherInfo(weatherData, labelTextsArray, UnitsArray, FinalWeatherInfoToDisplay, ref windDirection);
 
             foreach (var str in labelTextsArray) //dla wszystkich wlasciwosci pogody
-            {
                 SetMinMaxOfData(ref weatherData, str);
-            }
 
             UpdateTextBoxesData();
 
