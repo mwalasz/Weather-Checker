@@ -16,11 +16,15 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+//TODO dodac wyswietlanie minmax
+//TODO zapis do pliku minmax
+//TODO uporzadkowanie kodu
+//TODO usunac zalegle stare zmienne(finalARR, dataArray)
+
 namespace WindowWeatherApp
 {
     public partial class MainWindow : Window
     {
-
         protected const int NUM_OF_WEATHER_DATA = 5;
         protected const string FILE_PATH = "C:\\Users\\Mateusz\\Desktop\\Weather_GIG.txt";
         protected const string URL_PATH = "http://meteo.gig.eu/";
@@ -57,12 +61,40 @@ namespace WindowWeatherApp
             get { return finalWeatherInfoToDisplay; }
             set { finalWeatherInfoToDisplay = value; }
         }
-        public readonly string[] labelTextsArray = { "Temperatura", "Wilgotność", "Opady", "Wiatr", "Ciśnienie" };
+        public static readonly string[] labelTextsArray = { "Temperatura", "Wilgotność", "Opady", "Wiatr", "Ciśnienie" };
 
         private static readonly string[] unitsArray = { "°C", " %", " mm", "m/s", " hPa" };
         public static string[] UnitsArray { get { return unitsArray; } }
 
         //------------------------------------------------------------------------------------------------------
+
+        private static void ChangesValuesOfMultiDimArray(ref Object[,] arr, int row)
+        {
+            if (arr[row, 1] == null || arr[row, 3] == null)
+            {
+                arr[row, 1] = arr[row, 3] = arr[row, 0];
+                arr[row, 2] = arr[row, 4] = timeOfUpdate;
+            }
+            else
+            {
+                if ((double)arr[row, 0] < (double)arr[row, 1])
+                {
+                    arr[row, 1] = arr[row, 0]; //ustawienie nowego minimum
+                    arr[row, 2] = TimeOfUpdate;
+                }
+                else if ((double)arr[row, 0] > (double)arr[row, 3])
+                {
+                    arr[row, 1] = arr[row, 3]; //ustawienie nowego maksimum
+                    arr[row, 4] = TimeOfUpdate;
+                }
+            }
+        }
+
+        private static void SetMinMaxOfData(ref Object[,] arr, string nameOfData)
+        {
+            var index = Array.IndexOf(labelTextsArray, nameOfData);
+            ChangesValuesOfMultiDimArray(ref arr, index);
+        }
 
         private static void SetUpdateTime()
         {
@@ -136,23 +168,20 @@ namespace WindowWeatherApp
             if (whatToSearchFor == "stacji)")
                 whatToSearchFor = "Ciśnienie";
 
-            //zamiana pierwszej litery na duza
-
             whatToSearchFor = temp2; //przywrocenie pierwotnej wartosci
             return Convert.ToDouble(searchData);
         }
 
-        public static void DownloadWeatherInfo( double[] data, string[] labels, string[] units, string[] finalArr, ref string wind)
+        public static void DownloadWeatherInfo( Object[,] data, string[] labels, string[] units, string[] finalArr, ref string wind)
         {
             try
             {
                 var weatherData = "";
                 weatherData = GetDataFromWebSite(URL_PATH, FILE_PATH);
-                //DownloadWeatherInfo(data, labels, units, finalArr, wind);
             
                 for (int i = 0; i < NUM_OF_WEATHER_DATA; i++)
                 {
-                     data[i] = GetEachValueFromText(weatherData, labels[i], units[i], ref finalArr[i], ref wind);
+                     data[i,0] = GetEachValueFromText(weatherData, labels[i], units[i], ref finalArr[i], ref wind);
                 }
             }
             catch (System.Net.WebException e1)
@@ -169,20 +198,22 @@ namespace WindowWeatherApp
         {
             for (int i = 0; i < NUM_OF_WEATHER_DATA; i++)
             {
-                ArchiveDataArray[i] = DataArray[i];
+                if (weatherData[i, 0] == null)
+                    ArchiveDataArray[i] = 0;
+                else ArchiveDataArray[i] = (double)weatherData[i, 0];
             }
             archiveWindDirection = windDirection;
         }
 
         private void UpdateTextBoxesData()
         {
-            Temp.Text = DataArray[0].ToString();
-            Wilg.Text = DataArray[1].ToString();
-            Opad.Text = DataArray[2].ToString();
-            Wiatr.Text = DataArray[3].ToString();
-            Cisn.Text = DataArray[4].ToString();
+            Temp.Text = weatherData[0,0].ToString();
+            Wilg.Text = weatherData[1, 0].ToString();
+            Opad.Text = weatherData[2, 0].ToString();
+            Wiatr.Text = weatherData[3, 0].ToString();
+            Cisn.Text = weatherData[4, 0].ToString();
 
-            if (DataArray[3] > 0) //jesli wiatr wieje, to ma kierunek
+            if ((double)weatherData[3, 0] > 0) //jesli wiatr wieje, to ma kierunek
                 Kierunek.Text = windDirection;
             else Kierunek.Text = "--";
 
@@ -220,8 +251,13 @@ namespace WindowWeatherApp
         {
             ArchiveWeatherDataBeforeUpdate();
 
-            DownloadWeatherInfo(DataArray, labelTextsArray, UnitsArray, FinalWeatherInfoToDisplay, ref windDirection);
-            
+            DownloadWeatherInfo(weatherData, labelTextsArray, UnitsArray, FinalWeatherInfoToDisplay, ref windDirection);
+
+            foreach (var str in labelTextsArray) //dla wszystkich wlasciwosci pogody
+            {
+                SetMinMaxOfData(ref weatherData, str);
+            }
+
             UpdateTextBoxesData();
 
             ChangeColorOfWeatherDataText();
