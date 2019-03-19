@@ -20,11 +20,15 @@ namespace WindowWeatherApp
 {
     public partial class MainWindow : Window
     {
+
         protected const int NUM_OF_WEATHER_DATA = 5;
         protected const string FILE_PATH = "C:\\Users\\Mateusz\\Desktop\\Weather_GIG.txt";
         protected const string URL_PATH = "http://meteo.gig.eu/";
 
         public static string windDirection = "";
+        public static string archiveWindDirection = "";
+
+        private static Object[,] weatherData = new Object[NUM_OF_WEATHER_DATA, 5];
 
         private static DateTime timeOfUpdate;
         public static DateTime TimeOfUpdate
@@ -38,6 +42,13 @@ namespace WindowWeatherApp
         {
             get { return dataArray; }
             set { dataArray = value; }
+        }
+
+        private static double[] archiveDataArray = new double[NUM_OF_WEATHER_DATA];
+        public static double[] ArchiveDataArray
+        {
+            get { return archiveDataArray; }
+            set { archiveDataArray = value; }
         }
 
         private static string[] finalWeatherInfoToDisplay = new String[NUM_OF_WEATHER_DATA];
@@ -60,7 +71,6 @@ namespace WindowWeatherApp
 
         private static string GetDataFromWebSite(string url, string filePath)
         {
-            //Console.WriteLine("Oczekiwanie na dane ...");
             SetUpdateTime();
 
             WebClient client = new WebClient();
@@ -147,35 +157,84 @@ namespace WindowWeatherApp
             }
             catch (System.Net.WebException e1)
             {
-                Console.WriteLine("Blad podczas otwierania strony!");
+                MessageBox.Show("Blad podczas otwierania strony!");
             }
             catch (System.IO.DirectoryNotFoundException e2)
             {
-                Console.WriteLine("Bledna sciezka do pliku!");
+                MessageBox.Show("Bledna sciezka do pliku!");
             }
         }
 
-        public void UpdateData()
+        private void ArchiveWeatherDataBeforeUpdate()
         {
-            DownloadWeatherInfo(DataArray, labelTextsArray, UnitsArray, FinalWeatherInfoToDisplay, ref windDirection);
+            for (int i = 0; i < NUM_OF_WEATHER_DATA; i++)
+            {
+                ArchiveDataArray[i] = DataArray[i];
+            }
+            archiveWindDirection = windDirection;
+        }
 
+        private void UpdateTextBoxesData()
+        {
             Temp.Text = DataArray[0].ToString();
             Wilg.Text = DataArray[1].ToString();
             Opad.Text = DataArray[2].ToString();
             Wiatr.Text = DataArray[3].ToString();
-            Kierunek.Text = windDirection;
             Cisn.Text = DataArray[4].ToString();
+
+            if (DataArray[3] > 0) //jesli wiatr wieje, to ma kierunek
+                Kierunek.Text = windDirection;
+            else Kierunek.Text = "--";
+
             UpdateTime.Text = TimeOfUpdate.ToString();
+        }
+
+        private void ChangeColorOfWeatherDataText()
+        {
+            if (DataArray[0] == ArchiveDataArray[0])
+                Temp.Foreground = new SolidColorBrush(Colors.Crimson);
+            else Temp.Foreground = new SolidColorBrush(Colors.Lime);
+
+            if (DataArray[1] == ArchiveDataArray[1])
+                Wilg.Foreground = new SolidColorBrush(Colors.Crimson);
+            else Wilg.Foreground = new SolidColorBrush(Colors.Lime);
+
+            if (DataArray[2] == ArchiveDataArray[2])
+                Opad.Foreground = new SolidColorBrush(Colors.Crimson);
+            else Opad.Foreground = new SolidColorBrush(Colors.Lime);
+
+            if (DataArray[3] == ArchiveDataArray[3])
+                Wiatr.Foreground = new SolidColorBrush(Colors.Crimson);
+            else Wiatr.Foreground = new SolidColorBrush(Colors.Lime);
+
+            if (DataArray[4] == ArchiveDataArray[4])
+                Cisn.Foreground = new SolidColorBrush(Colors.Crimson);
+            else Cisn.Foreground = new SolidColorBrush(Colors.Lime);
+       
+            if (windDirection == archiveWindDirection)
+                Kierunek.Foreground = new SolidColorBrush(Colors.Crimson);
+            else Kierunek.Foreground = new SolidColorBrush(Colors.Lime);
+        }
+
+        public void UpdateData()
+        {
+            ArchiveWeatherDataBeforeUpdate();
+
+            DownloadWeatherInfo(DataArray, labelTextsArray, UnitsArray, FinalWeatherInfoToDisplay, ref windDirection);
+            
+            UpdateTextBoxesData();
+
+            ChangeColorOfWeatherDataText();
+        }
+        
+        private void UpdateButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            UpdateData();
         }
 
         public MainWindow()
         {
             InitializeComponent();
-            UpdateData();
-        }
-
-        private void UpdateButton_OnClick(object sender, RoutedEventArgs e)
-        {
             UpdateData();
         }
     }

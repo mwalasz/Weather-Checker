@@ -62,21 +62,26 @@ namespace WindowWeatherApp
 
         private static string GetDataFromWebSite(string url, string filePath)
         {
-            Console.WriteLine("Oczekiwanie na dane ...");
-            SetUpdateTime();
+            try
+            {
+                WebClient client = new WebClient();
+                Stream data = client.OpenRead(url);
+                StreamReader reader = new StreamReader(data);
 
-            WebClient client = new WebClient();
-            Stream data = client.OpenRead(url);
-            StreamReader reader = new StreamReader(data);
+                string htmlCodeFromWebSite = reader.ReadToEnd();
 
-            string htmlCodeFromWebSite = reader.ReadToEnd();
+                data.Close();
+                reader.Close();
 
-            data.Close();
-            reader.Close();
-
-            File.WriteAllText(filePath, htmlCodeFromWebSite);
-
-            return GetTextBetweenWords(htmlCodeFromWebSite, "<td class=\"czynnik\">Temperatura</td><td class=\"wartosc\">", "</td></tr><tr><td class=\"czynnik\">Intensywno");
+                SetUpdateTime();
+                File.WriteAllText(filePath, htmlCodeFromWebSite);
+                return GetTextBetweenWords(htmlCodeFromWebSite, "<td class=\"czynnik\">Temperatura</td><td class=\"wartosc\">", "</td></tr><tr><td class=\"czynnik\">Intensywno");
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+                throw;
+            }
         }
 
         private static string GetTextBetweenWords(string strSource, string strStart, string strEnd)
